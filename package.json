@@ -1,0 +1,34 @@
+{
+  "name": "jenkaz",
+  "version": "1.0.0",
+  "description": "custom github action to invoke the jenkins jobs from github ci ",
+  "keywords": [
+    "github",
+    "actions"
+  ],
+  "homepage": "https://github.com/madaarOperation/jenkaz#readme",
+  "bugs": {
+    "url": "https://github.com/madaarOperation/jenkaz/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/madaarOperation/jenkaz.git"
+  },
+  "license": "MIT",
+  "author": "Madaar-Devops",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 1",
+    "build": "ncc build src/index.ts -o dist"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "@actions/github": "^9.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "@vercel/ncc": "^0.38.4",
+    "typescript": "^6.0.3"
+  }
+}

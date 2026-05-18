@@ -1,0 +1,31 @@
+# ===================================== #
+# ======== Jenkaz Action ============== #
+# ===================================== #
+name: "Jenkaz"
+description: "Action To Trigger Jenkins Jobs From Github action"
+# INFO: Inputs Section
+inputs:
+  jenkins-url:
+    description: "url for jenkins server"
+    required: true
+    default: ""
+  jenkins-user:
+    description: "user for use to auth jenkins and trigger jobs"
+    required: true
+    default: ""
+  jenkins-token:
+    description: "user token for run jenkins jobs"
+    required: true
+    default: ""
+  jenkins-job:
+    description: "job id for job you need to trigger"
+    required: true
+    default: ""
+# INFO: Outputs Section
+outputs:
+  job-url:
+    description: "url for jenkins job"
+# INFO: Runs Section
+runs:
+  using: node24
+  main: "dist/index.js"
