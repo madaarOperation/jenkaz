@@ -93,6 +93,10 @@ Compiled output is generated in:
 dist/
 ```
 
+## Future Feature :
+
+- [ ] Support VPN Configuration
+
 ## License
 
 MIT
