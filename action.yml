@@ -37,7 +37,11 @@ inputs:
     description: "track a job timeout"
     required: false
     default: ""
-# INFO: Outputs Section
+  # jenkins-job-params:
+  #   description: "job params for configure jenkins"
+  # required: true
+  # default: "branch=main,port=3000,target_server=influencer-dev"
+  # INFO: Outputs Section
 outputs:
   job-url:
     description: "url for jenkins job"
