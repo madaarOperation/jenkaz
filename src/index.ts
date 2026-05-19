@@ -49,6 +49,16 @@ const triggerJob = async (job: JenkinsJob): Promise<void> => {
     const triggerUrl = `${job.url}/${job.jobName}/buildWithParameters`;
     console.log(`Trigger remote jenkins job at ${triggerUrl}`);
     console.log(`Trigger remote with ${job.user} and ${job.token}`);
+    await axios.post(triggerUrl, null, {
+      params: {
+        token: job.jobToken,
+        cause: "Trigger+By+Github+Action+Jenkaz",
+      },
+      auth: {
+        username: job.user,
+        password: job.token,
+      },
+    });
     // await axios.post(triggerUrl, null, {
     //   params: {
     //     token: job.token,
@@ -71,13 +81,7 @@ const triggerJob = async (job: JenkinsJob): Promise<void> => {
 
 // INFO: trigger jenkins function
 async function trigger_jenkins_job(job: JenkinsJob) {
-  console.log(`trigger jenkins job: ${job.jobName}`);
-  console.log(`trigger jenkins job: ${job.url}`);
-  console.log(`trigger jenkins job: ${job.user}`);
-  console.log(`trigger jenkins job: ${job.token}`);
-  console.log(`trigger jenkins job: ${job.jobToken}`);
-  console.log(`trigger jenkins job: ${job.track || "None"}`);
-  console.log(`trigger jenkins job: ${job.timeout || "None"}`);
+  console.log("*** Trigger Jenkins Job ***");
   triggerJob(job);
 }
 

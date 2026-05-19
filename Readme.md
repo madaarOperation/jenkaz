@@ -96,6 +96,7 @@ dist/
 ## Future Feature :
 
 - [ ] Support Build With Params
+- [ ] Clean the Input Data From `/`
 - [ ] Support VPN Configuration
 
 ## License
