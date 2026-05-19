@@ -30844,13 +30844,13 @@ function info(message) {
  * @param name The name of the output group
  */
 function startGroup(name) {
-    issue('group', name);
+    command_issue('group', name);
 }
 /**
  * End an output group.
  */
 function endGroup() {
-    issue('endgroup');
+    command_issue('endgroup');
 }
 /**
  * Wrap an asynchronous function call in a group.
@@ -30999,14 +30999,15 @@ async function run() {
             trackJob: track_jenkins_job,
         };
         // 2. trigger jenkins job
-        console.log("====================");
+        startGroup("Trigger Jenkins Job");
         await job.trigger(job);
-        console.log("====================");
+        endGroup();
         // 3. track jenkins job if configured 'track' mode
         if (job.track === "true") {
+            startGroup("Tracking Jenkins Job Execution");
             await job.trackJob(job);
+            endGroup();
         }
-        console.log("====================");
         output.status = "success";
     }
     catch (error) {
