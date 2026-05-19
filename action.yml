@@ -14,11 +14,15 @@ inputs:
     required: true
     default: ""
   jenkins-token:
-    description: "user token for run jenkins jobs"
+    description: "user token for run jenkins account"
     required: true
     default: ""
-  jenkins-job:
-    description: "job id for job you need to trigger"
+  jenkins-job-token:
+    description: "job token for job pipeline"
+    required: true
+    default: ""
+  jenkins-job-path:
+    description: "full path for trigger job after JENKINS_URL/?/buildwithParameters"
     required: true
     default: ""
   jenkins-wait:

@@ -42923,29 +42923,6 @@ const fetchJobStatus = async (job) => {
     const statusUrl = `${job.url}/job/${job.jobName}/lastBuild/api/json`;
     let status = "RUNNING";
     console.log(`Checking status via : ${statusUrl}`);
-    try {
-        const response = await lib_axios.get(statusUrl, {
-            auth: {
-                username: job.user,
-                password: job.token,
-            },
-            headers: {
-                Accept: "application/json",
-            },
-        });
-        if (response.data.building === true) {
-            status = "RUNNING";
-        }
-    }
-    catch (error) {
-        if (lib_axios.isAxiosError(error)) {
-            console.error(`Failed to fetch status (${error.response?.status})`, error.response?.data);
-        }
-        else {
-            console.error("Error fetch job status: ", error);
-        }
-        status = "FAILURE";
-    }
     return status;
 };
 // INFO: helper function to trigger the job
@@ -42956,18 +42933,19 @@ const triggerJob = async (job) => {
     sleep(waitTime);
     // 2. Trigger Jenkins Job
     try {
-        const triggerUrl = `${job.url}/job/${job.jobName}/buildWithParameters`;
+        const triggerUrl = `${job.url}/${job.jobName}/buildWithParameters`;
         console.log(`Trigger remote jenkins job at ${triggerUrl}`);
-        await lib_axios.post(triggerUrl, null, {
-            params: {
-                token: job.token,
-                cause: "Trigger+by+Github+Action+Jenkaz",
-            },
-            auth: {
-                username: job.user,
-                password: job.token,
-            },
-        });
+        console.log(`Trigger remote with ${job.user} and ${job.token}`);
+        // await axios.post(triggerUrl, null, {
+        //   params: {
+        //     token: job.token,
+        //     cause: "Trigger+by+Github+Action+Jenkaz",
+        //   },
+        //   auth: {
+        //     username: job.user,
+        //     password: job.token,
+        //   },
+        // });
         console.log(`Successfully triggered job: ${job.jobName}`);
     }
     catch (error) {
@@ -42982,18 +42960,14 @@ async function trigger_jenkins_job(job) {
     console.log(`trigger jenkins job: ${job.url}`);
     console.log(`trigger jenkins job: ${job.user}`);
     console.log(`trigger jenkins job: ${job.token}`);
+    console.log(`trigger jenkins job: ${job.jobToken}`);
     console.log(`trigger jenkins job: ${job.track || "None"}`);
     console.log(`trigger jenkins job: ${job.timeout || "None"}`);
     triggerJob(job);
 }
 // INFO: track jenkins jobs
 async function track_jenkins_job(job) {
-    console.log(`trigger jenkins job: ${job.jobName}`);
-    console.log(`trigger jenkins job: ${job.url}`);
-    console.log(`trigger jenkins job: ${job.user}`);
-    console.log(`trigger jenkins job: ${job.token}`);
-    console.log(`trigger jenkins job: ${job.track}`);
-    console.log(`trigger jenkins job: ${job.timeout}`);
+    console.log("*** Track Jenkins Job ***");
     const totalTimeOut = parseInt(job.timeout || "1000", 10);
     const checkInterval = totalTimeOut / 5;
     for (let i = 0; i < 5; i++) {
@@ -43028,7 +43002,8 @@ async function run() {
             url: getInput("jenkins-url"),
             user: getInput("jenkins-user"),
             token: getInput("jenkins-token"),
-            jobName: getInput("jenkins-job"),
+            jobName: getInput("jenkins-job-path"),
+            jobToken: getInput("jenkins-job-token"),
             track: getInput("jenkins-track"),
             timeout: getInput("jenkins-timeout"),
             trigger: trigger_jenkins_job,
