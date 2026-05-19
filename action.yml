@@ -21,6 +21,14 @@ inputs:
     description: "job id for job you need to trigger"
     required: true
     default: ""
+  jenkins-track:
+    description: "track a job mode"
+    required: false
+    default: ""
+  jenkins-timeout:
+    description: "track a job timeout"
+    required: false
+    default: ""
 # INFO: Outputs Section
 outputs:
   job-url:

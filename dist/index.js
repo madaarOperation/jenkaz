@@ -30926,25 +30926,52 @@ function getIDToken(aud) {
 // Project: jenkaz
 // =================================================== #
 
+// INFO: trigger jenkins function
+async function trigger_jenkins_job(job) {
+    console.log(`trigger jenkins job: ${job.jobName}`);
+    console.log(`trigger jenkins job: ${job.url}`);
+    console.log(`trigger jenkins job: ${job.user}`);
+    console.log(`trigger jenkins job: ${job.token}`);
+    console.log(`trigger jenkins job: ${job.track || "None"}`);
+    console.log(`trigger jenkins job: ${job.timeout || "None"}`);
+}
+// INFO: track jenkins jobs
+async function track_jenkins_job(job) {
+    console.log(`track jenkins job: ${job.jobName}`);
+}
 // INFO: Run Function
 async function run() {
+    const output = {
+        job_url: "",
+        status: "fail",
+    };
     try {
         // 1. Define Inputs
-        const jenkins_url = getInput("jenkins-url");
-        const jenkins_user = getInput("jenkins-user");
-        const jenkins_token = getInput("jenkins-token");
-        const jenkins_job = getInput("jenkins-token");
-        // 2. Process System
-        console.log(`Jenkins url: ${jenkins_url}`);
-        console.log(`Jenkins user: ${jenkins_user}`);
-        console.log(`Jenkins token: ${jenkins_token}`);
-        console.log(`Jenkins job: ${jenkins_job}`);
-        // 3. Generate Output
-        setOutput("time", new Date().toTimeString());
+        const job = {
+            url: getInput("jenkins-url"),
+            user: getInput("jenkins-user"),
+            token: getInput("jenkins-token"),
+            jobName: getInput("jenkins-job"),
+            track: getInput("jenkins-track"),
+            timeout: getInput("jenkins-timeout"),
+            trigger: trigger_jenkins_job,
+            trackJob: track_jenkins_job,
+        };
+        // 2. trigger jenkins job
+        await job.trigger(job);
+        // 3. track jenkins job if configured 'track' mode
+        if (job.track == "true") {
+            await job.trackJob(job);
+        }
+        output.status = "success";
     }
     catch (error) {
         if (error instanceof Error)
             setFailed(error.message);
+    }
+    finally {
+        setOutput("job_url", output.job_url);
+        setOutput("status", output.status);
     }
 }
 run();
