@@ -42933,39 +42933,29 @@ const triggerJob = async (job) => {
     sleep(waitTime);
     // 2. Trigger Jenkins Job
     try {
-        const triggerUrl = `${job.url}/${job.jobName}/buildWithParameters`;
+        const triggerUrl = `${job.url}/${job.jobName}/buildWithParameters?token=${job.jobToken}`;
         console.log(`Trigger remote jenkins job at ${triggerUrl}`);
         console.log(`Trigger remote with ${job.user} and ${job.token}`);
-        await lib_axios.post(triggerUrl, null, {
-            params: {
-                token: job.jobToken,
-                cause: "Trigger+By+Github+Action+Jenkaz",
-            },
+        const response = await lib_axios.post(triggerUrl, null, {
             auth: {
                 username: job.user,
                 password: job.token,
             },
         });
-        // await axios.post(triggerUrl, null, {
-        //   params: {
-        //     token: job.token,
-        //     cause: "Trigger+by+Github+Action+Jenkaz",
-        //   },
-        //   auth: {
-        //     username: job.user,
-        //     password: job.token,
-        //   },
-        // });
-        console.log(`Successfully triggered job: ${job.jobName}`);
+        if (response.status === 201 || response.status === 200) {
+            console.log("Build trigger successfully!");
+        }
+        else if (response.status === 403) {
+            console.log("Failed Build UnAthorized Build");
+        }
     }
     catch (error) {
-        if (lib_axios.isAxiosError(error)) {
-            throw new Error(`Jenkins Trigger Failed (${error.response?.status}) : ${JSON.stringify(error.response?.data)}`);
-        }
+        console.error("Error triggering Jenkins Job: ", error);
     }
 };
 // INFO: trigger jenkins function
 async function trigger_jenkins_job(job) {
+    console.log("*** Trigger Jenkins Job ***");
     console.log("*** Trigger Jenkins Job ***");
     triggerJob(job);
 }
