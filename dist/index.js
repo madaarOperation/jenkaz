@@ -30937,7 +30937,40 @@ async function trigger_jenkins_job(job) {
 }
 // INFO: track jenkins jobs
 async function track_jenkins_job(job) {
-    console.log(`track jenkins job: ${job.jobName}`);
+    console.log(`trigger jenkins job: ${job.jobName}`);
+    console.log(`trigger jenkins job: ${job.url}`);
+    console.log(`trigger jenkins job: ${job.user}`);
+    console.log(`trigger jenkins job: ${job.token}`);
+    console.log(`trigger jenkins job: ${job.track || "None"}`);
+    console.log(`trigger jenkins job: ${job.timeout || "None"}`);
+    // INFO: helper to define the sleep interval between checks
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    // INFO: helper to fetch the status for job
+    const fetchJobStatus = async (job) => {
+        console.log(`Job url: ${job.jobName}`);
+        return "RUNNING";
+    };
+    const totalTimeOut = parseInt(job.timeout || "1000", 10);
+    const checkInterval = totalTimeOut / 5;
+    for (let i = 0; i < 5; i++) {
+        await sleep(checkInterval);
+        console.log(`=> Checking status for job :${job.jobName} (Check ${i} / 5)`);
+        const currentStatus = await fetchJobStatus(job);
+        if (currentStatus == "SUCCESS") {
+            console.log("Job Finished With Success :)");
+            return;
+        }
+        else if (currentStatus == "FAILURE") {
+            console.log("Job Finished With Failed :(");
+            return;
+        }
+        else if (currentStatus == "RUNNING" && i == 4) {
+            // TEST: Only Test The Success Case
+            console.log("Simulate Success");
+            return;
+        }
+    }
+    console.log(`=> Time reaced for job: ${job.jobName}`);
 }
 // INFO: Run Function
 async function run() {
@@ -30958,11 +30991,14 @@ async function run() {
             trackJob: track_jenkins_job,
         };
         // 2. trigger jenkins job
+        console.log("====================");
         await job.trigger(job);
+        console.log("====================");
         // 3. track jenkins job if configured 'track' mode
-        if (job.track == "true") {
+        if (job.track === "true") {
             await job.trackJob(job);
         }
+        console.log("====================");
         output.status = "success";
     }
     catch (error) {
