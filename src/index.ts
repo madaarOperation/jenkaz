@@ -104,14 +104,15 @@ async function run() {
     };
 
     // 2. trigger jenkins job
-    console.log("====================");
+    core.startGroup("Trigger Jenkins Job");
     await job.trigger(job);
-    console.log("====================");
+    core.endGroup();
     // 3. track jenkins job if configured 'track' mode
     if (job.track === "true") {
+      core.startGroup("Tracking Jenkins Job Execution");
       await job.trackJob(job);
+      core.endGroup();
     }
-    console.log("====================");
 
     output.status = "success";
   } catch (error) {
