@@ -30926,6 +30926,20 @@ function getIDToken(aud) {
 // Project: jenkaz
 // =================================================== #
 
+// INFO: helper to define the sleep interval between checks
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// INFO: helper to fetch the status for job
+const fetchJobStatus = async (job) => {
+    console.log(`Job url: ${job.jobName}`);
+    return "RUNNING";
+};
+// INFO: helper function to trigger the job
+const triggerJob = async (job) => {
+    const waitTime = parseInt(job.wait || "1000", 10);
+    console.log(`Job Will Trigger after ${waitTime}`);
+    sleep(waitTime);
+    console.log(`Job url: ${job.jobName}`);
+};
 // INFO: trigger jenkins function
 async function trigger_jenkins_job(job) {
     console.log(`trigger jenkins job: ${job.jobName}`);
@@ -30934,6 +30948,7 @@ async function trigger_jenkins_job(job) {
     console.log(`trigger jenkins job: ${job.token}`);
     console.log(`trigger jenkins job: ${job.track || "None"}`);
     console.log(`trigger jenkins job: ${job.timeout || "None"}`);
+    triggerJob(job);
 }
 // INFO: track jenkins jobs
 async function track_jenkins_job(job) {
@@ -30941,15 +30956,8 @@ async function track_jenkins_job(job) {
     console.log(`trigger jenkins job: ${job.url}`);
     console.log(`trigger jenkins job: ${job.user}`);
     console.log(`trigger jenkins job: ${job.token}`);
-    console.log(`trigger jenkins job: ${job.track || "None"}`);
-    console.log(`trigger jenkins job: ${job.timeout || "None"}`);
-    // INFO: helper to define the sleep interval between checks
-    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    // INFO: helper to fetch the status for job
-    const fetchJobStatus = async (job) => {
-        console.log(`Job url: ${job.jobName}`);
-        return "RUNNING";
-    };
+    console.log(`trigger jenkins job: ${job.track}`);
+    console.log(`trigger jenkins job: ${job.timeout}`);
     const totalTimeOut = parseInt(job.timeout || "1000", 10);
     const checkInterval = totalTimeOut / 5;
     for (let i = 0; i < 5; i++) {

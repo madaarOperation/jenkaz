@@ -9,6 +9,7 @@ interface JenkinsJob {
   user: string;
   token: string;
   jobName: string;
+  wait?: string;
   track?: string;
   timeout?: string;
 
@@ -16,10 +17,28 @@ interface JenkinsJob {
   trackJob: (job: JenkinsJob) => Promise<void>;
 }
 
+// INFO: ActionOutput interface
 interface ActionOutput {
   job_url: string;
   status: string;
 }
+
+// INFO: helper to define the sleep interval between checks
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// INFO: helper to fetch the status for job
+const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
+  console.log(`Job url: ${job.jobName}`);
+  return "RUNNING";
+};
+
+// INFO: helper function to trigger the job
+const triggerJob = async (job: JenkinsJob): Promise<void> => {
+  const waitTime = parseInt(job.wait || "1000", 10);
+  console.log(`Job Will Trigger after ${waitTime}`);
+  sleep(waitTime);
+  console.log(`Job url: ${job.jobName}`);
+};
 
 // INFO: trigger jenkins function
 async function trigger_jenkins_job(job: JenkinsJob) {
@@ -29,6 +48,7 @@ async function trigger_jenkins_job(job: JenkinsJob) {
   console.log(`trigger jenkins job: ${job.token}`);
   console.log(`trigger jenkins job: ${job.track || "None"}`);
   console.log(`trigger jenkins job: ${job.timeout || "None"}`);
+  triggerJob(job);
 }
 
 // INFO: track jenkins jobs
@@ -37,17 +57,8 @@ async function track_jenkins_job(job: JenkinsJob) {
   console.log(`trigger jenkins job: ${job.url}`);
   console.log(`trigger jenkins job: ${job.user}`);
   console.log(`trigger jenkins job: ${job.token}`);
-  console.log(`trigger jenkins job: ${job.track || "None"}`);
-  console.log(`trigger jenkins job: ${job.timeout || "None"}`);
-
-  // INFO: helper to define the sleep interval between checks
-  const sleep = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
-  // INFO: helper to fetch the status for job
-  const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
-    console.log(`Job url: ${job.jobName}`);
-    return "RUNNING";
-  };
+  console.log(`trigger jenkins job: ${job.track}`);
+  console.log(`trigger jenkins job: ${job.timeout}`);
 
   const totalTimeOut = parseInt(job.timeout || "1000", 10);
   const checkInterval = totalTimeOut / 5;

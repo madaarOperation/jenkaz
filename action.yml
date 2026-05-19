@@ -21,6 +21,10 @@ inputs:
     description: "job id for job you need to trigger"
     required: true
     default: ""
+  jenkins-wait:
+    description: "waiting time before run the jenkins job"
+    required: false
+    default: ""
   jenkins-track:
     description: "track a job mode"
     required: false
