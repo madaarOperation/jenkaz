@@ -2,6 +2,7 @@
 // Project: jenkaz
 // =================================================== #
 import * as core from "@actions/core";
+import axios from "axios";
 
 // INFO: JenkinsJob interface
 interface JenkinsJob {
@@ -29,15 +30,64 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // INFO: helper to fetch the status for job
 const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   console.log(`Job url: ${job.jobName}`);
-  return "RUNNING";
+  const statusUrl = `${job.url}/job/${job.jobName}/lastBuild/api/json`;
+  let status = "RUNNING";
+  console.log(`Checking status via : ${statusUrl}`);
+  try {
+    const response = await axios.get(statusUrl, {
+      auth: {
+        username: job.user,
+        password: job.token,
+      },
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (response.data.building === true) {
+      status = "RUNNING";
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        `Failed to fetch status (${error.response?.status})`,
+        error.response?.data,
+      );
+    } else {
+      console.error("Error fetch job status: ", error);
+    }
+    status = "FAILURE";
+  }
+  return status;
 };
 
 // INFO: helper function to trigger the job
 const triggerJob = async (job: JenkinsJob): Promise<void> => {
+  // 1. Build Wait Time
   const waitTime = parseInt(job.wait || "1000", 10);
   console.log(`Job Will Trigger after ${waitTime}`);
   sleep(waitTime);
-  console.log(`Job url: ${job.jobName}`);
+  // 2. Trigger Jenkins Job
+  try {
+    const triggerUrl = `${job.url}/job/${job.jobName}/buildWithParameters`;
+    console.log(`Trigger remote jenkins job at ${triggerUrl}`);
+    await axios.post(triggerUrl, null, {
+      params: {
+        token: job.token,
+        cause: "Trigger+by+Github+Action+Jenkaz",
+      },
+      auth: {
+        username: job.user,
+        password: job.token,
+      },
+    });
+    console.log(`Successfully triggered job: ${job.jobName}`);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        `Jenkins Trigger Failed (${error.response?.status}) : ${JSON.stringify(error.response?.data)}`,
+      );
+    }
+  }
 };
 
 // INFO: trigger jenkins function
@@ -107,6 +157,7 @@ async function run() {
     core.startGroup("Trigger Jenkins Job");
     await job.trigger(job);
     core.endGroup();
+
     // 3. track jenkins job if configured 'track' mode
     if (job.track === "true") {
       core.startGroup("Tracking Jenkins Job Execution");
