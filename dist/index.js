@@ -42945,12 +42945,14 @@ const triggerJob = async (job) => {
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
         }
-        else if (response.status === 403) {
-            console.log("Failed Build UnAthorized Build");
-        }
     }
     catch (error) {
-        console.error("Error triggering Jenkins Job: ", error);
+        if (lib_axios.isAxiosError(error) && error.response) {
+            console.error(`API Error ${error.response.status}: `, error.response.data);
+        }
+        else {
+            console.error(`General Error`, error);
+        }
     }
 };
 // INFO: trigger jenkins function
