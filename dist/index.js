@@ -42938,6 +42938,7 @@ const fetchJobStatus = async (job) => {
     console.log(`Url: ${url}`);
     if (result === "SUCCESS") {
         console.log("+ Successfully Deploy New Version Of Project");
+        status = "SUCCESS";
     }
     else if (result === "FAILURE" || result === "ABORTED") {
         console.log("+ Error Happen When Try To Deploy New Version");
@@ -42985,7 +42986,7 @@ async function trigger_jenkins_job(job) {
 async function track_jenkins_job(job) {
     console.log("*** Track Jenkins Job ***");
     const totalTimeOut = parseInt(job.timeout || "100", 10);
-    sleep((0,external_node_crypto_.randomInt)(5000, 10000)); // small delay until we track the job_id in output when we trigger it
+    sleep((0,external_node_crypto_.randomInt)(10000)); // small delay until we track the job_id in output when we trigger it
     let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
     while (true) {
         await sleep(500);

@@ -3,7 +3,6 @@
 // =================================================== #
 import * as core from "@actions/core";
 import axios from "axios";
-import { randomInt } from "node:crypto";
 
 // INFO: JenkinsJob interface
 interface JenkinsJob {
@@ -48,6 +47,7 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   console.log(`Url: ${url}`);
   if (result === "SUCCESS") {
     console.log("+ Successfully Deploy New Version Of Project");
+    status = "SUCCESS";
   } else if (result === "FAILURE" || result === "ABORTED") {
     console.log("+ Error Happen When Try To Deploy New Version");
     status = "FAILURE";
@@ -99,7 +99,7 @@ async function trigger_jenkins_job(job: JenkinsJob) {
 async function track_jenkins_job(job: JenkinsJob) {
   console.log("*** Track Jenkins Job ***");
   const totalTimeOut = parseInt(job.timeout || "100", 10);
-  sleep(randomInt(5000, 10000)); // small delay until we track the job_id in output when we trigger it
+  sleep(10000); // small delay until we track the job_id in output when we trigger it
   let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
   while (true) {
     await sleep(500);
