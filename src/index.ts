@@ -45,6 +45,12 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   const result = response.data.result;
   console.log(`Result: ${result}`);
   console.log(`Url: ${url}`);
+  if (result === "SUCCESS") {
+    console.log("+ Successfully Deploy New Version Of Project");
+  } else if (result === "FAILURE" || result === "ABORTED") {
+    console.log("+ Error Happen When Try To Deploy New Version");
+    status = "FAILURE";
+  }
   return status;
 };
 
@@ -94,6 +100,7 @@ async function track_jenkins_job(job: JenkinsJob) {
   const totalTimeOut = parseInt(job.timeout || "1000", 10);
   const checkInterval = totalTimeOut / 5;
 
+  // INFO: divide the tracking time for 5 interval
   for (let i = 0; i < 5; i++) {
     await sleep(checkInterval);
     console.log(`=> Checking status for job :${job.jobName} (Check ${i} / 5)`);
@@ -103,10 +110,6 @@ async function track_jenkins_job(job: JenkinsJob) {
       return;
     } else if (currentStatus == "FAILURE") {
       console.log("Job Finished With Failed :(");
-      return;
-    } else if (currentStatus == "RUNNING" && i == 4) {
-      // TEST: Only Test The Success Case
-      console.log("Simulate Success");
       return;
     }
   }
