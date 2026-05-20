@@ -97,14 +97,24 @@ async function trigger_jenkins_job(job: JenkinsJob) {
 // INFO: track jenkins jobs
 async function track_jenkins_job(job: JenkinsJob) {
   console.log("*** Track Jenkins Job ***");
-  const totalTimeOut = parseInt(job.timeout || "1000", 10);
-  const checkInterval = totalTimeOut / 5;
+  // const totalTimeOut = parseInt(job.timeout || "1000", 10);
+  // const checkInterval = totalTimeOut / 5;
 
   // INFO: divide the tracking time for 5 interval
-  for (let i = 0; i < 5; i++) {
-    await sleep(checkInterval);
-    console.log(`=> Checking status for job :${job.jobName} (Check ${i} / 5)`);
+  // INFO: Will Remove This Part and Only Use Timeout and result status
+  let counter = 1; // timeout => counter * 500 = 10 * 500 = 5000ms = 5s
+  while (true) {
+    await sleep(500);
+    console.log(
+      `=> Checking status for job :${job.jobName} (Check ${counter} / 10)`,
+    );
     const currentStatus = await fetchJobStatus(job);
+    // check the timeout
+    if (counter >= 10) {
+      console.log("Hit Timeout!");
+      return;
+    }
+    // check the status for result
     if (currentStatus == "SUCCESS") {
       console.log("Job Finished With Success :)");
       return;
@@ -112,6 +122,7 @@ async function track_jenkins_job(job: JenkinsJob) {
       console.log("Job Finished With Failed :(");
       return;
     }
+    counter++;
   }
   console.log(`=> Time reaced for job: ${job.jobName}`);
 }
