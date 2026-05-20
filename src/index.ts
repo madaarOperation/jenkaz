@@ -102,15 +102,16 @@ async function track_jenkins_job(job: JenkinsJob) {
 
   // INFO: divide the tracking time for 5 interval
   // INFO: Will Remove This Part and Only Use Timeout and result status
-  let counter = 1; // timeout => counter * 500 = 10 * 500 = 5000ms = 5s
+  sleep(2000); // wait for 2sec
+  let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
   while (true) {
-    await sleep(500);
+    await sleep(1000);
     console.log(
-      `=> Checking status for job :${job.jobName} (Check ${counter} / 10)`,
+      `=> Checking status for job :${job.jobName} (Check ${counter} / 20)`,
     );
     const currentStatus = await fetchJobStatus(job);
     // check the timeout
-    if (counter >= 10) {
+    if (counter >= 20) {
       console.log("Hit Timeout!");
       return;
     }
