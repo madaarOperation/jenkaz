@@ -34,6 +34,15 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   const statusUrl = `${job.url}/job/${job.jobName}/lastBuild/api/json`;
   let status = "RUNNING";
   console.log(`Checking status via : ${statusUrl}`);
+
+  const response = await axios.get(statusUrl, {
+    auth: {
+      username: job.user,
+      password: job.token,
+    },
+  });
+  console.log(`Res: ${response}`);
+
   return status;
 };
 

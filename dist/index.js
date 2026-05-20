@@ -42923,6 +42923,13 @@ const fetchJobStatus = async (job) => {
     const statusUrl = `${job.url}/job/${job.jobName}/lastBuild/api/json`;
     let status = "RUNNING";
     console.log(`Checking status via : ${statusUrl}`);
+    const response = await lib_axios.get(statusUrl, {
+        auth: {
+            username: job.user,
+            password: job.token,
+        },
+    });
+    console.log(`Res: ${response}`);
     return status;
 };
 // INFO: helper function to trigger the job
