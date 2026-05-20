@@ -41,7 +41,8 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
       password: job.token,
     },
   });
-  console.log(`Res: ${response}`);
+  console.log(`Res: ${Object.keys(response)}`);
+  // console.log(`Res Result: ${response.result ?}`);
 
   return status;
 };

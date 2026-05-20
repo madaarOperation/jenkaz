@@ -42929,7 +42929,8 @@ const fetchJobStatus = async (job) => {
             password: job.token,
         },
     });
-    console.log(`Res: ${response}`);
+    console.log(`Res: ${Object.keys(response)}`);
+    // console.log(`Res Result: ${response.result ?}`);
     return status;
 };
 // INFO: helper function to trigger the job
