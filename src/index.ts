@@ -41,15 +41,10 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
       password: job.token,
     },
   });
-  console.log(`Res: ${Object.keys(response)}`);
-  console.log(`Res [status]: ${response.status}`);
-  console.log(`Res [data]: ${Object.keys(response.data)}`);
-  console.log(`Res [data][result]: ${response.data.result || "UNKNOWN"}`);
-  console.log(
-    `Res [data][inProgress]: ${response.data.inProgress || "UNKNOWN"}`,
-  );
-  console.log(`Res [data][url]: ${response.data.url || "UNKNOWN"}`);
-
+  const url = response.data.url;
+  const result = response.data.result;
+  console.log(`Result: ${result}`);
+  console.log(`Url: ${url}`);
   return status;
 };
 
