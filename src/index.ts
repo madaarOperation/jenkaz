@@ -31,7 +31,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // INFO: helper to fetch the status for job
 const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   console.log(`Job url: ${job.jobName}`);
-  const statusUrl = `${job.url}/job/${job.jobName}/lastBuild/api/json`;
+  const statusUrl = `${job.url}/${job.jobName}/lastBuild/api/json`;
   let status = "RUNNING";
   console.log(`Checking status via : ${statusUrl}`);
 
