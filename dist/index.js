@@ -42909,10 +42909,13 @@ axios.default = axios;
 // this module should only have a default export
 /* harmony default export */ const lib_axios = (axios);
 
+// EXTERNAL MODULE: external "node:crypto"
+var external_node_crypto_ = __nccwpck_require__(7598);
 ;// CONCATENATED MODULE: ./src/index.ts
 // =================================================== #
 // Project: jenkaz
 // =================================================== #
+
 
 
 // INFO: helper to define the sleep interval between checks
@@ -42981,18 +42984,15 @@ async function trigger_jenkins_job(job) {
 // INFO: track jenkins jobs
 async function track_jenkins_job(job) {
     console.log("*** Track Jenkins Job ***");
-    // const totalTimeOut = parseInt(job.timeout || "1000", 10);
-    // const checkInterval = totalTimeOut / 5;
-    // INFO: divide the tracking time for 5 interval
-    // INFO: Will Remove This Part and Only Use Timeout and result status
-    sleep(2000); // wait for 2sec
+    const totalTimeOut = parseInt(job.timeout || "100", 10);
+    sleep((0,external_node_crypto_.randomInt)(5000, 10000)); // small delay until we track the job_id in output when we trigger it
     let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
     while (true) {
-        await sleep(1000);
-        console.log(`=> Checking status for job :${job.jobName} (Check ${counter} / 20)`);
+        await sleep(500);
+        console.log(`=> Checking status for job :${job.jobName} (Check ${counter} / ${totalTimeOut})`);
         const currentStatus = await fetchJobStatus(job);
         // check the timeout
-        if (counter >= 20) {
+        if (counter >= totalTimeOut) {
             console.log("Hit Timeout!");
             return;
         }
