@@ -35,7 +35,6 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   let status = "RUNNING";
   const statusUrl = `${job.url}/${job.jobName}/lastBuild/api/json`;
 
-  // create a get request to find the job status
   let response = await axios.get(statusUrl, {
     auth: {
       username: job.user,
@@ -43,14 +42,8 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
     },
   });
   let inProgress = response.data.inProgress;
-  console.log(
-    `[Track] Current InProgress Status: ${inProgress} And Current Job Start ${job.start}`,
-  );
 
-  // initial wait until new build start
-  console.log(`Con: ${inProgress === false} && ${job.start === 0}`);
   do {
-    console.log("[Track] Wait Until New Build Start");
     response = await axios.get(statusUrl, {
       auth: {
         username: job.user,
@@ -79,25 +72,11 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   return status;
 };
 
-// INFO: getCircularReplacer Function
-// const getCircularReplacer = () => {
-//   const seen = new WeakSet();
-//   return (_: string, value: any) => {
-//     if (typeof value === "object" && value != null) {
-//       if (seen.has(value)) {
-//         return "[Circular]";
-//       }
-//       seen.add(value);
-//     }
-//     return value;
-//   };
-// };
-
 // INFO: helper function to trigger the job
 const triggerJob = async (job: JenkinsJob): Promise<string> => {
   // 1. Build Wait Time
   const waitTime = parseInt(job.wait || "1000", 10);
-  console.log(`[Trigger]Job Will Trigger after ${waitTime}`);
+  console.log(`[Trigger] Job Will Trigger after ${waitTime}`);
   sleep(waitTime);
 
   // 2. Trigger Jenkins Job
@@ -110,20 +89,11 @@ const triggerJob = async (job: JenkinsJob): Promise<string> => {
       },
     });
 
-    // TEST: Print Logging for Extract the Build Number For Track it
-    // console.log(`Trigger remote jenkins job at ${triggerUrl}`);
-    // console.log(`Trigger remote with ${job.user} and ${job.token}`);
-    // console.log(
-    //   `[Trigger] Response : ${JSON.stringify(response, getCircularReplacer())}`,
-    //   2,
-    // );
-
     // check is job trigger correctly
     if (response.status === 201 || response.status === 200) {
-      console.log("Build trigger successfully!");
+      console.log("[Trigger] Trigger Done successfully!");
       return "SUCCESS";
     }
-
     return "FAILURE";
   } catch (error) {
     // check the type of error
@@ -150,8 +120,8 @@ async function trigger_jenkins_job(job: JenkinsJob): Promise<string> {
 async function track_jenkins_job(job: JenkinsJob): Promise<string> {
   console.log("[Track] Start Track Jenkins Job");
 
-  const timeInterval = parseInt(job.timeout || "100", 10);
-  const waitTime = parseInt(job.wait || "100000", 10);
+  const timeInterval = parseInt(job.timeout || "100000") / 10;
+  const waitTime = parseInt(job.wait || "100000");
 
   // initial wait before start tracking
   sleep(waitTime + 10000);
@@ -159,7 +129,7 @@ async function track_jenkins_job(job: JenkinsJob): Promise<string> {
   // start tracking job
   let counter = 1;
   while (true) {
-    await sleep(500);
+    await sleep(1000); // fixed delay between check 1 sec can make it configurable
     console.log(
       `=> Checking status for job :${job.jobName} (Check ${counter} / ${timeInterval})`,
     );
