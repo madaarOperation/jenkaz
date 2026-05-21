@@ -14,6 +14,7 @@ interface JenkinsJob {
   wait?: string;
   track?: string;
   timeout?: string;
+  start: number;
 
   trigger: (job: JenkinsJob) => Promise<string>;
   trackJob: (job: JenkinsJob) => Promise<string>;
@@ -35,21 +36,36 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   const statusUrl = `${job.url}/${job.jobName}/lastBuild/api/json`;
 
   // create a get request to find the job status
-  const response = await axios.get(statusUrl, {
+  let response = await axios.get(statusUrl, {
     auth: {
       username: job.user,
       password: job.token,
     },
   });
-  const url = response.data.url;
-  const result = response.data.result;
-  const inProgress = response.data.inProgress;
+  let inProgress = response.data.inProgress;
+  console.log(
+    `[Track] Current InProgress Status: ${inProgress} And Current Job Start ${job.start}`,
+  );
 
-  // TEST: Print The Response Data
-  console.log(`[Fetch] Result: ${result}`);
-  console.log(`[Fetch] Checking status via : ${statusUrl}`);
-  console.log(`[Fetch] InProgress: ${inProgress}`);
-  console.log(`[Fetch] Url: ${url}`);
+  // initial wait until new build start
+  console.log(`Con: ${inProgress === "false"} && ${job.start === 0}`);
+  while (inProgress === "false" && job.start === 0) {
+    console.log("[Track] Wait Until New Build Start");
+    response = await axios.get(statusUrl, {
+      auth: {
+        username: job.user,
+        password: job.token,
+      },
+    });
+    inProgress = response.data.inProgress;
+    if (inProgress === "true") {
+      job.start = 1;
+    }
+  }
+
+  let url = response.data.url;
+  let result = response.data.result;
+  console.log(`[Track] URL: ${url}`);
 
   // update `status` value
   if (result === "SUCCESS") {
@@ -64,18 +80,18 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
 };
 
 // INFO: getCircularReplacer Function
-const getCircularReplacer = () => {
-  const seen = new WeakSet();
-  return (_: string, value: any) => {
-    if (typeof value === "object" && value != null) {
-      if (seen.has(value)) {
-        return "[Circular]";
-      }
-      seen.add(value);
-    }
-    return value;
-  };
-};
+// const getCircularReplacer = () => {
+//   const seen = new WeakSet();
+//   return (_: string, value: any) => {
+//     if (typeof value === "object" && value != null) {
+//       if (seen.has(value)) {
+//         return "[Circular]";
+//       }
+//       seen.add(value);
+//     }
+//     return value;
+//   };
+// };
 
 // INFO: helper function to trigger the job
 const triggerJob = async (job: JenkinsJob): Promise<string> => {
@@ -95,12 +111,12 @@ const triggerJob = async (job: JenkinsJob): Promise<string> => {
     });
 
     // TEST: Print Logging for Extract the Build Number For Track it
-    console.log(`Trigger remote jenkins job at ${triggerUrl}`);
-    console.log(`Trigger remote with ${job.user} and ${job.token}`);
-    console.log(
-      `[Trigger] Response : ${JSON.stringify(response, getCircularReplacer())}`,
-      2,
-    );
+    // console.log(`Trigger remote jenkins job at ${triggerUrl}`);
+    // console.log(`Trigger remote with ${job.user} and ${job.token}`);
+    // console.log(
+    //   `[Trigger] Response : ${JSON.stringify(response, getCircularReplacer())}`,
+    //   2,
+    // );
 
     // check is job trigger correctly
     if (response.status === 201 || response.status === 200) {
@@ -138,7 +154,7 @@ async function track_jenkins_job(job: JenkinsJob): Promise<string> {
   const waitTime = parseInt(job.wait || "100000", 10);
 
   // initial wait before start tracking
-  sleep(waitTime + 1000);
+  sleep(waitTime + 10000);
 
   // start tracking job
   let counter = 1;
@@ -186,6 +202,7 @@ async function run() {
       jobToken: core.getInput("jenkins-job-token"),
       track: core.getInput("jenkins-track"),
       timeout: core.getInput("jenkins-timeout"),
+      start: 0,
 
       trigger: trigger_jenkins_job,
       trackJob: track_jenkins_job,
