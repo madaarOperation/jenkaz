@@ -42933,7 +42933,7 @@ const fetchJobStatus = async (job) => {
     console.log(`[Track] Current InProgress Status: ${inProgress} And Current Job Start ${job.start}`);
     // initial wait until new build start
     console.log(`Con: ${inProgress === false} && ${job.start === 0}`);
-    while (inProgress === false && job.start === 0) {
+    do {
         console.log("[Track] Wait Until New Build Start");
         response = await lib_axios.get(statusUrl, {
             auth: {
@@ -42942,10 +42942,10 @@ const fetchJobStatus = async (job) => {
             },
         });
         inProgress = response.data.inProgress;
-        if (inProgress === "true") {
+        if (inProgress === true) {
             job.start = 1;
         }
-    }
+    } while (inProgress == false && job.start == 0);
     let url = response.data.url;
     let result = response.data.result;
     console.log(`[Track] URL: ${url}`);
