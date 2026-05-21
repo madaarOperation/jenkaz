@@ -42919,10 +42919,10 @@ axios.default = axios;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // INFO: helper to fetch the status for job
 const fetchJobStatus = async (job) => {
-    console.log(`Job url: ${job.jobName}`);
-    const statusUrl = `${job.url}/${job.jobName}/lastBuild/api/json`;
+    console.log(`[Fetch] Job url: ${job.jobName}`);
     let status = "RUNNING";
-    console.log(`Checking status via : ${statusUrl}`);
+    const statusUrl = `${job.url}/${job.jobName}/lastBuild/api/json`;
+    // create a get request to find the job status
     const response = await lib_axios.get(statusUrl, {
         auth: {
             username: job.user,
@@ -42931,14 +42931,19 @@ const fetchJobStatus = async (job) => {
     });
     const url = response.data.url;
     const result = response.data.result;
-    console.log(`Result: ${result}`);
-    console.log(`Url: ${url}`);
+    const inProgress = response.data.inProgress;
+    // TEST: Print The Response Data
+    console.log(`[Fetch] Result: ${result}`);
+    console.log(`[Fetch] Checking status via : ${statusUrl}`);
+    console.log(`[Fetch] InProgress: ${inProgress}`);
+    console.log(`[Fetch] Url: ${url}`);
+    // update `status` value
     if (result === "SUCCESS") {
-        console.log("+ Successfully Deploy New Version Of Project");
+        console.log("[Fetch] Successfully Deploy New Version Of Project");
         status = "SUCCESS";
     }
     else if (result === "FAILURE" || result === "ABORTED") {
-        console.log("+ Error Happen When Try To Deploy New Version");
+        console.log("[Fetch] Error Happen When Try To Deploy New Version");
         status = "FAILURE";
     }
     return status;
@@ -42965,8 +42970,6 @@ const triggerJob = async (job) => {
     // 2. Trigger Jenkins Job
     try {
         const triggerUrl = `${job.url}/${job.jobName}/buildWithParameters?token=${job.jobToken}`;
-        console.log(`Trigger remote jenkins job at ${triggerUrl}`);
-        console.log(`Trigger remote with ${job.user} and ${job.token}`);
         const response = await lib_axios.post(triggerUrl, null, {
             auth: {
                 username: job.user,
@@ -42974,59 +42977,67 @@ const triggerJob = async (job) => {
             },
         });
         // TEST: Print Logging for Extract the Build Number For Track it
+        console.log(`Trigger remote jenkins job at ${triggerUrl}`);
+        console.log(`Trigger remote with ${job.user} and ${job.token}`);
         console.log(`[Trigger] Response : ${JSON.stringify(response, getCircularReplacer())}`, 2);
+        // check is job trigger correctly
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
+            return "SUCCESS";
         }
+        return "FAILURE";
     }
     catch (error) {
+        // check the type of error
         if (lib_axios.isAxiosError(error) && error.response) {
             console.error(`API Error ${error.response.status}: `, error.response.data);
         }
         else {
             console.error(`General Error`, error);
         }
+        return "FAILURE";
     }
 };
 // INFO: trigger jenkins function
 async function trigger_jenkins_job(job) {
-    console.log("*** Trigger Jenkins Job ***");
-    console.log("*** Trigger Jenkins Job ***");
-    triggerJob(job);
+    console.log("[Trigger] Start Trigger Jenkins Job ");
+    return triggerJob(job);
 }
 // INFO: track jenkins jobs
 async function track_jenkins_job(job) {
-    console.log("*** Track Jenkins Job ***");
-    const totalTimeOut = parseInt(job.timeout || "100", 10);
-    sleep(10000); // small delay until we track the job_id in output when we trigger it
-    let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
+    console.log("[Track] Start Track Jenkins Job");
+    const timeInterval = parseInt(job.timeout || "100", 10);
+    const waitTime = parseInt(job.wait || "100000", 10);
+    // initial wait before start tracking
+    sleep(waitTime + 1000);
+    // start tracking job
+    let counter = 1;
     while (true) {
         await sleep(500);
-        console.log(`=> Checking status for job :${job.jobName} (Check ${counter} / ${totalTimeOut})`);
+        console.log(`=> Checking status for job :${job.jobName} (Check ${counter} / ${timeInterval})`);
         const currentStatus = await fetchJobStatus(job);
         // check the timeout
-        if (counter >= totalTimeOut) {
+        if (counter >= timeInterval) {
             console.log("Hit Timeout!");
-            return;
+            return "TIMEOUT";
         }
         // check the status for result
         if (currentStatus == "SUCCESS") {
             console.log("Job Finished With Success :)");
-            return;
+            return currentStatus;
         }
         else if (currentStatus == "FAILURE") {
             console.log("Job Finished With Failed :(");
-            return;
+            return currentStatus;
         }
         counter++;
     }
-    console.log(`=> Time reaced for job: ${job.jobName}`);
 }
 // INFO: Run Function
 async function run() {
     const output = {
         job_url: "",
-        status: "fail",
+        status: "FAILURE",
     };
     try {
         // 1. Define Inputs
@@ -43043,15 +43054,14 @@ async function run() {
         };
         // 2. trigger jenkins job
         startGroup("Trigger Jenkins Job");
-        await job.trigger(job);
+        output.status = await job.trigger(job);
         endGroup();
         // 3. track jenkins job if configured 'track' mode
-        if (job.track === "true") {
+        if (job.track === "true" && output.status === "SUCCESS") {
             startGroup("Tracking Jenkins Job Execution");
-            await job.trackJob(job);
+            output.status = await job.trackJob(job);
             endGroup();
         }
-        output.status = "success";
     }
     catch (error) {
         if (error instanceof Error)
