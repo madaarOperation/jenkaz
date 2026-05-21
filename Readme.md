@@ -100,6 +100,8 @@ dist/
 - [ ] Support VPN Configuration .
 - [ ] Copy The Build Errors To Github .
 
+> Make It Private And Keep After Development Finish .
+
 ## License
 
 MIT
