@@ -42947,7 +42947,7 @@ const fetchJobStatus = async (job) => {
 const triggerJob = async (job) => {
     // 1. Build Wait Time
     const waitTime = parseInt(job.wait || "1000", 10);
-    console.log(`Job Will Trigger after ${waitTime}`);
+    console.log(`[Trigger]Job Will Trigger after ${waitTime}`);
     sleep(waitTime);
     // 2. Trigger Jenkins Job
     try {
@@ -42960,7 +42960,13 @@ const triggerJob = async (job) => {
                 password: job.token,
             },
         });
-        console.log(`Response : ${Object.keys(response)}`);
+        // TEST: Print Logging for Extract the Build Number For Track it
+        console.log(`[Trigger] Response : ${Object.keys(response)}`);
+        console.log(`[Trigger] Response Data: ${Object.keys(response.data)}`);
+        console.log(`[Trigger] Response Data: ${response.data}`);
+        console.log(`[Trigger] Response Config: ${Object.keys(response.config)}`);
+        console.log(`[Trigger] Response Config Data : ${response.config.data}`);
+        console.log(`[Trigger] Response Config Data : ${Object.keys(response.config.data)}`);
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
         }
