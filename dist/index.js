@@ -42961,12 +42961,7 @@ const triggerJob = async (job) => {
             },
         });
         // TEST: Print Logging for Extract the Build Number For Track it
-        console.log(`[Trigger] Response : ${Object.keys(response)}`);
-        console.log(`[Trigger] Response Data: ${Object.keys(response.data)}`);
-        console.log(`[Trigger] Response Data: ${response.data}`);
-        console.log(`[Trigger] Response Config: ${Object.keys(response.config)}`);
-        console.log(`[Trigger] Response Config Data : ${response.config.data}`);
-        console.log(`[Trigger] Response Config Data : ${Object.keys(response.config.data)}`);
+        console.log(`[Trigger] Response : ${JSON.stringify(response)}`);
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
         }
