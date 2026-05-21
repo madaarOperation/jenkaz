@@ -42943,6 +42943,19 @@ const fetchJobStatus = async (job) => {
     }
     return status;
 };
+// INFO: getCircularReplacer Function
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (_, value) => {
+        if (typeof value === "object" && value != null) {
+            if (seen.has(value)) {
+                return "[Circular]";
+            }
+            seen.add(value);
+        }
+        return value;
+    };
+};
 // INFO: helper function to trigger the job
 const triggerJob = async (job) => {
     // 1. Build Wait Time
@@ -42961,7 +42974,7 @@ const triggerJob = async (job) => {
             },
         });
         // TEST: Print Logging for Extract the Build Number For Track it
-        console.log(`[Trigger] Response : ${JSON.stringify(response)}`);
+        console.log(`[Trigger] Response : ${JSON.stringify(response, getCircularReplacer())}`, 2);
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
         }
