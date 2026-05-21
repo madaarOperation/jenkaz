@@ -48,8 +48,8 @@ const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
   );
 
   // initial wait until new build start
-  console.log(`Con: ${inProgress === "false"} && ${job.start === 0}`);
-  while (inProgress === "false" && job.start === 0) {
+  console.log(`Con: ${inProgress === false} && ${job.start === 0}`);
+  while (inProgress === false && job.start === 0) {
     console.log("[Track] Wait Until New Build Start");
     response = await axios.get(statusUrl, {
       auth: {
