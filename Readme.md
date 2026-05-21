@@ -95,9 +95,10 @@ dist/
 
 ## Future Feature :
 
-- [ ] Support Build With Params
-- [ ] Clean the Input Data From `/`
-- [ ] Support VPN Configuration
+- [ ] Support Build With Params .
+- [ ] Clean the Input Data From `/` .
+- [ ] Support VPN Configuration .
+- [ ] Copy The Build Errors To Github .
 
 ## License
 
