@@ -73,6 +73,7 @@ const triggerJob = async (job: JenkinsJob): Promise<void> => {
         password: job.token,
       },
     });
+    console.log(`Response : ${Object.keys(response)}`);
     if (response.status === 201 || response.status === 200) {
       console.log("Build trigger successfully!");
     }

@@ -42909,13 +42909,10 @@ axios.default = axios;
 // this module should only have a default export
 /* harmony default export */ const lib_axios = (axios);
 
-// EXTERNAL MODULE: external "node:crypto"
-var external_node_crypto_ = __nccwpck_require__(7598);
 ;// CONCATENATED MODULE: ./src/index.ts
 // =================================================== #
 // Project: jenkaz
 // =================================================== #
-
 
 
 // INFO: helper to define the sleep interval between checks
@@ -42963,6 +42960,7 @@ const triggerJob = async (job) => {
                 password: job.token,
             },
         });
+        console.log(`Response : ${Object.keys(response)}`);
         if (response.status === 201 || response.status === 200) {
             console.log("Build trigger successfully!");
         }
@@ -42986,7 +42984,7 @@ async function trigger_jenkins_job(job) {
 async function track_jenkins_job(job) {
     console.log("*** Track Jenkins Job ***");
     const totalTimeOut = parseInt(job.timeout || "100", 10);
-    sleep((0,external_node_crypto_.randomInt)(10000)); // small delay until we track the job_id in output when we trigger it
+    sleep(10000); // small delay until we track the job_id in output when we trigger it
     let counter = 1; // timeout => counter * 1000 = 20 * 1000 = 20000ms = 20s
     while (true) {
         await sleep(500);
