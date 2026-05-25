@@ -37,6 +37,10 @@ inputs:
     description: "track a job timeout"
     required: false
     default: ""
+  jenkins-logs:
+    description: "print Jenkins stage and console logs in GitHub Actions"
+    required: false
+    default: "false"
   # jenkins-job-params:
   #   description: "job params for configure jenkins"
   # required: true
