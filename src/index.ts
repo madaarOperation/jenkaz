@@ -14,6 +14,7 @@ interface JenkinsJob {
   wait?: string;
   track?: string;
   timeout?: string;
+  logs?: string;
   start: number;
 
   trigger: (job: JenkinsJob) => Promise<string>;
@@ -26,8 +27,97 @@ interface ActionOutput {
   status: string;
 }
 
+interface JenkinsStage {
+  name: string;
+  status?: string;
+}
+
+interface JenkinsWorkflowApiResponse {
+  stages?: JenkinsStage[];
+  status?: string;
+  url?: string;
+  result?: string;
+}
+
 // INFO: helper to define the sleep interval between checks
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const normalizeBooleanInput = (value: string | undefined): boolean =>
+  value === "true";
+
+const tailLines = (value: string, count: number): string => {
+  const lines = value.split(/\r?\n/);
+  return lines.slice(Math.max(lines.length - count, 0)).join("\n");
+};
+
+const fetchJobWorkflowInfo = async (
+  job: JenkinsJob,
+): Promise<JenkinsWorkflowApiResponse> => {
+  const workflowUrl = `${job.url}/${job.jobName}/lastBuild/wfapi/describe`;
+
+  const response = await axios.get(workflowUrl, {
+    auth: {
+      username: job.user,
+      password: job.token,
+    },
+  });
+
+  return response.data as JenkinsWorkflowApiResponse;
+};
+
+const fetchJobConsoleText = async (job: JenkinsJob): Promise<string> => {
+  const consoleUrl = `${job.url}/${job.jobName}/lastBuild/consoleText`;
+
+  const response = await axios.get(consoleUrl, {
+    auth: {
+      username: job.user,
+      password: job.token,
+    },
+    responseType: "text",
+  });
+
+  return response.data as string;
+};
+
+const printJenkinsLogs = async (job: JenkinsJob): Promise<void> => {
+  try {
+    const workflowInfo = await fetchJobWorkflowInfo(job);
+    const stages = workflowInfo.stages ?? [];
+    const failedStage = stages.find((stage) => stage.status === "FAILED");
+    const finishedStage =
+      [...stages].reverse().find((stage) => stage.status === "SUCCESS") ??
+      stages[stages.length - 1];
+    const targetStage = failedStage ?? finishedStage;
+
+    if (targetStage) {
+      console.log(
+        `[Logs] Jenkins stage: ${targetStage.name} (${targetStage.status ?? "UNKNOWN"})`,
+      );
+    }
+
+    const consoleText = await fetchJobConsoleText(job);
+    const logTail = tailLines(consoleText, 80);
+
+    core.startGroup("Jenkins Console Logs");
+    if (targetStage) {
+      console.log(
+        `[Logs] Showing the last console output for stage: ${targetStage.name}`,
+      );
+    }
+    console.log(logTail);
+    core.endGroup();
+  } catch (error) {
+    console.log("[Logs] Unable to fetch Jenkins logs");
+    if (axios.isAxiosError(error) && error.response) {
+      console.error(
+        `API Error ${error.response.status}: `,
+        error.response.data,
+      );
+    } else {
+      console.error(`General Error`, error);
+    }
+  }
+};
 
 // INFO: helper to fetch the status for job
 const fetchJobStatus = async (job: JenkinsJob): Promise<string> => {
@@ -172,6 +262,7 @@ async function run() {
       jobToken: core.getInput("jenkins-job-token"),
       track: core.getInput("jenkins-track"),
       timeout: core.getInput("jenkins-timeout"),
+      logs: core.getInput("jenkins-logs"),
       start: 0,
 
       trigger: trigger_jenkins_job,
@@ -187,6 +278,12 @@ async function run() {
     if (job.track === "true" && output.status === "SUCCESS") {
       core.startGroup("Tracking Jenkins Job Execution");
       output.status = await job.trackJob(job);
+      core.endGroup();
+    }
+
+    if (normalizeBooleanInput(job.logs)) {
+      core.startGroup("Fetching Jenkins Logs");
+      await printJenkinsLogs(job);
       core.endGroup();
     }
   } catch (error) {

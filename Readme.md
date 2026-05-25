@@ -77,7 +77,10 @@ jobs:
           jenkins-job: my-job
           jenkins-user: ${{ secrets.JENKINS_USER }}
           jenkins-token: ${{ secrets.JENKINS_TOKEN }}
+          jenkins-logs: true
 ```
+
+Set `jenkins-logs: true` when you want the action to print the last Jenkins pipeline stage it reached and the tail of the console output into the GitHub Actions log.
 
 ## Development
 
@@ -99,6 +102,7 @@ dist/
 - [ ] Clean the Input Data From `/` .
 - [ ] Support VPN Configuration .
 - [ ] Copy The Build Errors To Github .
+- [x] Show Jenkins pipeline logs in GitHub Actions when enabled.
 
 > Make It Private And Keep After Development Finish .
 
